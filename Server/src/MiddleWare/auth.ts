@@ -54,7 +54,7 @@ export const VerifyAuthToken = async (token: string): Promise<AuthUser | null> =
         const store = await prisma.stores.findFirst({ where: { merchant_id: effectiveId } })
 
         let role: "admin" | "merchant" | "customer" = "customer";
-        if (u?.role === "admin" || payload.role === "admin" || effectiveEmail.includes("admin@")) {
+        if (u?.role === "admin" || payload.role === "admin") {
             role = "admin";
         } else if (store || u?.role === "merchant" || payload.role === "merchant") {
             role = "merchant"
@@ -73,7 +73,7 @@ export const VerifyAuthToken = async (token: string): Promise<AuthUser | null> =
     }
 }
 
-export const requrieAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+export const requireAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         res.status(401).json({ success: false, message: "Unauthorized: No token provided" })
@@ -81,6 +81,13 @@ export const requrieAuth = async (req: AuthenticatedRequest, res: Response, next
     }
 
     const token = authHeader.split(" ")[1];
+    if (!token) {
+        res.status(401).json({
+            success: false,
+            message: "Unauthorized: No token provided"
+        });
+        return;
+    }
     const user = await VerifyAuthToken(token);
 
     if (!user) {
@@ -96,6 +103,13 @@ export const optionalAuth = async (req: AuthenticatedRequest, res: Response, nex
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.split(" ")[1];
+        if (!token) {
+            res.status(401).json({
+                success: false,
+                message: "Unauthorized: No token provided"
+            });
+            return;
+        }
         const user = await VerifyAuthToken(token);
         if (user) {
             req.user = user;
@@ -104,7 +118,7 @@ export const optionalAuth = async (req: AuthenticatedRequest, res: Response, nex
     next()
 }
 
-export const requrieRole = async (roles: Array<"admin" | "merchant" | "customer">) => {
+export const requireRole = (roles: Array<"admin" | "merchant" | "customer">) => {
     return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
         if (!req.user || !roles.includes(req.user.role)) {
             res.status(403).json({ success: false, message: "Forbidden: Access denied" });
