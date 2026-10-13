@@ -60,7 +60,7 @@ export const createCategory = async (req: AuthenticatedRequest, res: Response): 
         }
 
         const { name } = req.body;
-        if (!name.trim()) {
+        if (typeof name !== "string" || !name.trim()) {
             res.status(400).json({ success: false, message: "Category name is required" });
             return;
         }
