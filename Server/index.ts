@@ -4,6 +4,7 @@ import express, { type Express, type Request, type Response } from 'express';
 import cors from 'cors';
 // import AdminAuthRoutes from "./src/AdminLogin/AdminLoginRoute";
 import categoryRouter from './src/Category/categoryRoutes';
+import uploadRouter from './Upload/uploadRoutes';
 
 const PORT = 3000;
 
@@ -20,6 +21,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use("/api/categories", categoryRouter);
+app.use("/api/uppload", uploadRouter)
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
