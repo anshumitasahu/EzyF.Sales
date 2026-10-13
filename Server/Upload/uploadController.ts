@@ -46,7 +46,7 @@ export const uploadSingle = async (req: Request, res: Response): Promise<void> =
         const url = await uploadToCloudinary(req.file.buffer, "EzyF", {
             mimetype: req.file.mimetype,
             filename: req.file.originalname,
-        }).catch(() => `data:${req.file!.mimetype};base64, ${req.file!.buffer.toString("base64")}`)
+        })
 
         res.json({ success: true, url })
 
@@ -68,7 +68,7 @@ export const uploadMultiple = async (req: Request, res: Response): Promise<void>
             files.map((file) => uploadToCloudinary(file.buffer, "EzyF", {
                 mimetype: file.mimetype,
                 filename: file.originalname,
-            }).catch(() => `data:${file.mimetype};base64, ${req.file!.buffer.toString("base64")}`))
+            }))
         )
 
         res.json({ success: true, urls })
