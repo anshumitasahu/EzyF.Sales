@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import { prisma } from "../../lib/prisma";
+import type { AuthenticatedRequest } from "../MiddleWare/auth";
 
 const generateSlug = (text: string) => text.toString().toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w\-]+/g, "")
 
@@ -50,7 +51,7 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
     }
 }
 
-export const createCategory = async (req: Request, res: Response): Promise<void> => {
+export const createCategory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
         const store = await getStore(req.user!.id)
         if (!store) {
@@ -75,7 +76,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
     }
 }
 
-export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
+export const deleteCategory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
         const store = await getStore(req.user!.id);
         if (!store) {
