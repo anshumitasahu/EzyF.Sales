@@ -4,7 +4,7 @@ import express, { type Express, type Request, type Response } from 'express';
 import cors from 'cors';
 // import AdminAuthRoutes from "./src/AdminLogin/AdminLoginRoute";
 import categoryRouter from './src/Category/categoryRoutes';
-import uploadRouter from './Upload/uploadRoutes';
+import uploadRouter from './src/UploadImage/uploadRoutes';
 
 const PORT = 3000;
 

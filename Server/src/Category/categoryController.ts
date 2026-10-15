@@ -2,7 +2,7 @@ import type { Request, Response } from "express"
 import { prisma } from "../../lib/prisma";
 import type { AuthenticatedRequest } from "../MiddleWare/auth";
 
-const generateSlug = (text: string) => text.toString().toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w\-]+/g, "")
+const generateSlug = (text: string) => text.toString().toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w\-]+/g, "");
 
 const getStore = (merchantId: string) => prisma.stores.findFirst({
     where: {

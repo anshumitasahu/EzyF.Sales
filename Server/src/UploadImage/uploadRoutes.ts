@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { requireAuth } from "../src/MiddleWare/auth";
-import { upload } from "../src/MiddleWare/upload";
+import { requireAuth } from "../MiddleWare/auth";
+import { upload } from "../MiddleWare/upload";
 import { aiOnModel, aiTransform, uploadMultiple, uploadSingle } from "./uploadController";
 
 const uploadRouter = Router()

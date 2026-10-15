@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { createRemoteJWKSet, jwtVerify } from "jose"
-import { findNeonUser } from "../NeonUser";
+import { findNeonUser } from "../services/NeonUser";
 import { prisma } from "../../lib/prisma";
 
 export interface AuthUser {

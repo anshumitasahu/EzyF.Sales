@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import cloudinary from "../lib/cloudinary";
+import cloudinary from "../../lib/cloudinary";
 
 export const optimizeDeliveryUrl = (url: string): string => {
     if (!url || typeof url !== "string" || url.includes(".svg")) return url;
