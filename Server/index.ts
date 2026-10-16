@@ -6,6 +6,7 @@ import cors from 'cors';
 import categoryRouter from './src/Category/categoryRoutes';
 import uploadRouter from './src/UploadImage/uploadRoutes';
 import storeRouter from './src/UploadImage/storRoutes';
+import productRouter from './src/Products/productRoutes';
 
 const PORT = 3000;
 
@@ -24,6 +25,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use("/api/categories", categoryRouter);
 app.use("/api/uppload", uploadRouter)
 app.use("/api/stores", storeRouter)
+app.use("/api/products", productRouter)
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
