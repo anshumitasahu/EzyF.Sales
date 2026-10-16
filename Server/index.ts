@@ -5,7 +5,7 @@ import cors from 'cors';
 // import AdminAuthRoutes from "./src/AdminLogin/AdminLoginRoute";
 import categoryRouter from './src/Category/categoryRoutes';
 import uploadRouter from './src/UploadImage/uploadRoutes';
-import storeRouter from './src/UploadImage/storRoutes';
+import storeRouter from './src/UploadImage/storeRoutes';
 import productRouter from './src/Products/productRoutes';
 
 const PORT = 3000;
