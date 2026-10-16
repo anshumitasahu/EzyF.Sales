@@ -7,6 +7,7 @@ import categoryRouter from './src/Category/categoryRoutes';
 import uploadRouter from './src/UploadImage/uploadRoutes';
 import storeRouter from './src/UploadImage/storeRoutes';
 import productRouter from './src/Products/productRoutes';
+import orderRouter from './src/Order/orderRoutes';
 
 const PORT = 3000;
 
@@ -26,6 +27,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/uppload", uploadRouter)
 app.use("/api/stores", storeRouter)
 app.use("/api/products", productRouter)
+app.use("/api/orders", orderRouter)
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
