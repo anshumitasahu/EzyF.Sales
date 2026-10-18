@@ -16,6 +16,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "7.10.0",
     "cloudinary": "^2.11.0",
