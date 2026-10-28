@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { authClient } from "../auth";
+import { api } from "../config/api";
 
 export interface User {
     id: number | string;
@@ -44,23 +46,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState<boolean>(true);
 
     const refreshMe = async () => {
-        const savedToken = localStorage.getItem("EzyF_token");
-        const savedUser = localStorage.getItem("EzyF_user");
-        const savedStore = localStorage.getItem("EzyF_store");
+        try {
+            const sessionsRes = await authClient.getSession().catch(() => null);
+            const activeSession = sessionsRes?.data?.session;
+            const activeNeonUser = sessionsRes?.data?.user;
 
-        if (savedToken && savedUser) {
-            try {
-                setUser(JSON.parse(savedUser));
-                if (savedStore) setStore(JSON.parse(savedStore));
-            } catch {
+            const savedToken = activeSession?.token || localStorage.getItem("EzyF_token")
+
+            if (!activeNeonUser) {
+                localStorage.removeItem("EzyF_token");
                 setUser(null);
                 setStore(null);
+                setToken(null);
+                setLoading(false);
+                return;
             }
-        } else {
+
+            if (savedToken) {
+                localStorage.setItem("EzyF_token", savedToken);
+                setToken(savedToken);
+            }
+
+            let initialRole = "customer";
+
+            const neonRole = (activeNeonUser as any).role
+            if (neonRole === "admin") {
+                initialRole = "admin";
+            } else if (neonRole === "merchant") {
+                initialRole = "merchant";
+            }
+
+            let resolvedStore: Store | null = null;
+
+            if (initialRole !== "admin") {
+                try {
+                    const storeRes = await api.get("/api/store/me", {
+                        headers: savedToken ? { Authorization: `Bearer ${savedToken}` } : undefined,
+                    });
+                    if (storeRes.data?.success && storeRes.data?.store) {
+                        resolvedStore = storeRes.data.store;
+                        initialRole = "merchant";
+                    }
+                } catch {
+                    resolvedStore = null;
+                }
+            }
+            console.log("Resolved role:", initialRole);
+            console.log("Resolved store:", resolvedStore);
+
+            setUser({
+                id: activeNeonUser.id,
+                name: activeNeonUser.name || activeNeonUser.email.split("@")[0],
+                email: activeNeonUser.email,
+                role: initialRole,
+                store_id: initialRole === "admin" ? null : (resolvedStore?.id || null),
+            })
+
+            setStore(initialRole === "admin" ? null : resolvedStore);
+
+            console.log("Session user:", activeNeonUser);
+            console.log("Session role:", (activeNeonUser as any)?.role);
+        } catch (err) {
+            console.error("Error refreshing auth session:", err);
+            localStorage.removeItem("EzyF_token");
             setUser(null);
             setStore(null);
+            setToken(null);
         }
-        setLoading(false);
+        finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -68,24 +123,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const login = (newToken: string, newUser: User, newStore?: Store | null) => {
-        localStorage.setItem("EzyF_token", newToken);
-        localStorage.setItem("EzyF_user", JSON.stringify(newUser));
-        if (newStore !== undefined && newStore !== null) {
-            localStorage.setItem("EzyF_store", JSON.stringify(newStore));
-        } else {
-            localStorage.removeItem("EzyF_store");
+        if (newToken) {
+            localStorage.setItem("EzyF_token", newToken);
+            setToken(newToken);
         }
-        setToken(newToken);
+
         setUser(newUser);
         if (newStore !== undefined) {
             setStore(newStore);
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await authClient.signOut();
+        } catch (e) {
+            console.warn("SignOut Error:", e)
+        }
         localStorage.removeItem("EzyF_token");
-        localStorage.removeItem("EzyF_user");
-        localStorage.removeItem("EzyF_store");
         setToken(null);
         setUser(null);
         setStore(null);

@@ -1,14 +1,12 @@
 import React from "react";
-import { DUMMY_ORDERS } from "../../assets/assets";
-import { useAuth } from "../../context/AuthContext";
 import { MerchantLayout } from "../../components/MerchantLayout";
 import toast from "react-hot-toast";
 import { OrderTable, type OrderItem } from "../../components/merchant/orders/OrderTable";
 import { OrderDetailModal } from "../../components/merchant/orders/OrderDetailModal";
 import { useEffect, useState } from "react";
+import { api } from "../../config/api";
 
 export const OrdersPage: React.FC = () => {
-    const { store } = useAuth();
     const [orders, setOrders] = useState<OrderItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState("all");
@@ -18,49 +16,41 @@ export const OrdersPage: React.FC = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [filterStatus, store]);
+    }, [filterStatus]);
 
-    const fetchOrders = () => {
+    const fetchOrders = async () => {
         setLoading(true);
-        const storeSlug = store?.slug || "forever";
-        let storeOrders = DUMMY_ORDERS.filter((o) => o.store_slug === storeSlug || !store?.slug);
-        if (filterStatus !== "all") {
-            storeOrders = storeOrders.filter((o) => o.order_status === filterStatus);
+
+        try {
+            const url = filterStatus !== "all" ? `/api/orders/merchant?status=${encodeURIComponent(filterStatus)}` : "/api/orders/merchant";
+
+            const res = await api.get(url);
+            if (res.data.success) setOrders(res.data.orders);
+        } catch (err) {
+            console.log(err)
+        } finally {
+            setLoading(false);
         }
-        setOrders(storeOrders as any);
-        setLoading(false);
     };
 
-    const handleUpdateOrder = (orderId: number, status: string, tracking?: string, payment?: string) => {
+    const handleUpdateOrder = async (orderId: number, status: string, tracking?: string, payment?: string) => {
         setUpdatingStatus(true);
-        setTimeout(() => {
-            setOrders((prev) =>
-                prev.map((o) =>
-                    o.id === orderId
-                        ? {
-                              ...o,
-                              order_status: status,
-                              ...(tracking !== undefined && { tracking_number: tracking }),
-                              ...(payment !== undefined && { payment_status: payment }),
-                          }
-                        : o
-                )
-            );
-            if (selectedOrder?.id === orderId) {
-                setSelectedOrder((prev) =>
-                    prev
-                        ? {
-                              ...prev,
-                              order_status: status,
-                              ...(tracking !== undefined && { tracking_number: tracking }),
-                              ...(payment !== undefined && { payment_status: payment }),
-                          }
-                        : null
-                );
+        try {
+            const res = await api.patch(`/api/orders/merchant/${orderId}/status`, {
+                order_status: status,
+                ...(tracking !== undefined && { tracking_number: tracking }),
+                ...(payment !== undefined && { payment_status: payment }),
+            })
+            if (res.data.success) {
+                toast.success("Order status updated!");
+                setOrders((prev) => prev.map((o) => (o.id === orderId ? res.data.order : o)))
+                if (selectedOrder?.id === orderId) setSelectedOrder(res.data.order);
             }
-            toast.success("Order status updated!");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to update order");
+        } finally {
             setUpdatingStatus(false);
-        }, 200);
+        }
     };
 
     return (

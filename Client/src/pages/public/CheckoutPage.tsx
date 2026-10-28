@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import { DUMMY_STORES } from "../../assets/assets";
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import toast from "react-hot-toast";
@@ -10,6 +9,7 @@ import { CheckoutContactForm } from "../../components/public/checkout/CheckoutCo
 import { CheckoutShippingForm, type ShippingAddress } from "../../components/public/checkout/CheckoutShippingForm";
 import { CheckoutOrderSummary } from "../../components/public/checkout/CheckoutOrderSummary";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 export const CheckoutPage: React.FC = () => {
     const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -34,17 +34,51 @@ export const CheckoutPage: React.FC = () => {
     });
 
     useEffect(() => {
-        if (storeSlug) {
-            setStoreSlug(storeSlug);
-            const currentStore = DUMMY_STORES.find((s) => s.slug === storeSlug) || DUMMY_STORES[0];
-            setStore(currentStore);
-            if (user) {
-                setCustomerName(user.name || "");
-                setCustomerEmail(user.email || "");
-            }
+        if (!storeSlug) {
             setLoading(false);
+            return;
         }
-    }, [storeSlug, user, setStoreSlug]);
+
+        setStoreSlug(storeSlug);
+
+        const fetchStore = async () => {
+            setLoading(true);
+
+            try {
+                const res = await api.get(
+                    `/api/store/slug/${encodeURIComponent(storeSlug)}`
+                );
+
+                if (res.data.success && res.data.store) {
+                    setStore(res.data.store);
+                } else {
+                    setStore(null);
+                    toast.error("Store not found");
+                }
+            } catch (error: any) {
+                console.error(
+                    "Failed to fetch store:",
+                    error.response?.data || error.message
+                );
+
+                setStore(null);
+                toast.error(
+                    error.response?.data?.message || "Failed to load store"
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStore();
+    }, [storeSlug, setStoreSlug]);
+
+    useEffect(() => {
+        if (user) {
+            setCustomerName(user.name || "");
+            setCustomerEmail(user.email || "");
+        }
+    }, [user]);
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500 text-sm">Loading checkout...</div>;
@@ -85,13 +119,31 @@ export const CheckoutPage: React.FC = () => {
         }
 
         setSubmitting(true);
-        setTimeout(() => {
-            const dummyOrderNumber = `ORD-${(storeSlug || "STORE").toUpperCase().slice(0, 3)}-${Math.floor(1000 + Math.random() * 9000)}`;
-            clearCart();
-            toast.success("Order placed successfully!");
+        try {
+            const payload = {
+                storeSlug,
+                items: cart,
+                customerName,
+                customerEmail,
+                customerPhone,
+                shippingAddress: address,
+                paymentMethod: "cod",
+            }
+
+            const res = await api.post("/api/orders/checkout", payload)
+
+            if (res.data.success) {
+                const order = res.data.order;
+                clearCart();
+                toast.success("Order placed successfully");
+                navigate(`/store/${storeSlug}/order-confirmation/${order.order_number}`);
+            }
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err.response?.data?.message || "Failed to place order");
+        } finally {
             setSubmitting(false);
-            navigate(`/store/${storeSlug}/order-confirmation/${dummyOrderNumber}`);
-        }, 400);
+        }
     };
 
     return (

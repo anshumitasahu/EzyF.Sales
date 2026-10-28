@@ -4,6 +4,48 @@ import { prisma } from "../../lib/prisma";
 
 const getMerchantsStore = (merchantId: string) => prisma.stores.findFirst({ where: { merchant_id: merchantId } })
 
+
+export const getProducts = async (
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const store = await getMerchantsStore(req.user!.id);
+
+        if (!store) {
+            res.status(404).json({
+                success: false,
+                message: "Store not found",
+            });
+            return;
+        }
+
+        const products = await prisma.products.findMany({
+            where: {
+                store_id: store.id,
+            },
+            include: {
+                categories: true,
+            },
+            orderBy: {
+                created_at: "desc",
+            },
+        });
+
+        res.status(200).json({
+            success: true,
+            products,
+        });
+    } catch (error: unknown) {
+        console.error("getProducts error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch products",
+        });
+    }
+};
+
 export const createProduct = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
         const store = await getMerchantsStore(req.user!.id)
@@ -129,19 +171,19 @@ export const deleteProduct = async (req: AuthenticatedRequest, res: Response): P
             return;
         }
 
-        const deleted = await prisma.stores.deleteMany({
+        const deleted = await prisma.products.delete({
             where: {
                 id: Number(req.params.id), store_id: store.id
             }
         })
 
-        if (deleted.count === 0) {
-            res.status(404).json({
-                success: false,
-                message: "Product not found or access denied",
-            })
-            return;
-        }
+        // if (deleted === 0) {
+        //     res.status(404).json({
+        //         success: false,
+        //         message: "Product not found or access denied",
+        //     })
+        //     return;
+        // }
 
         res.status(200).json({
             success: true,

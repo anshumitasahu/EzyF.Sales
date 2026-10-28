@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { DUMMY_STORES, DUMMY_ORDERS } from "../../assets/assets";
 import { useAuth } from "../../context/AuthContext";
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { ShoppingBag, ArrowLeft, Truck } from "lucide-react";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 export const CustomerOrders: React.FC = () => {
     const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -15,20 +15,73 @@ export const CustomerOrders: React.FC = () => {
     const [store, setStore] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+
     useEffect(() => {
-        if (!storeSlug || authLoading) return;
-        if (!user) {
-            navigate(`/store/${storeSlug}/login`);
+        if (authLoading) return;
+
+        if (!storeSlug) {
+            setLoading(false);
             return;
         }
-        const currentStore = DUMMY_STORES.find((s) => s.slug === storeSlug) || DUMMY_STORES[0];
-        setStore(currentStore);
 
-        const storeOrders = DUMMY_ORDERS.filter((o) => o.store_slug === storeSlug);
-        setOrders(storeOrders);
-        setLoading(false);
+        let isMounted = true;
+
+        const fetchOrders = async () => {
+            setLoading(true);
+
+            try {
+                const storeRes = await api.get(
+                    `/api/store/slug/${encodeURIComponent(storeSlug)}`
+                );
+
+                if (!isMounted) return;
+
+                if (!storeRes.data.success || !storeRes.data.store) {
+                    setStore(null);
+                    setOrders([]);
+                    return;
+                }
+
+                setStore(storeRes.data.store);
+
+                if (!user) {
+                    navigate(`/store/${storeSlug}/login`);
+                    return;
+                }
+                const orderRes = await api.get("/api/orders/customer/my-orders", {
+                    params: { storeSlug },
+                });
+
+                if (!isMounted) return;
+
+                if (orderRes.data.success) {
+                    setOrders(orderRes.data.orders || []);
+                } else {
+                    setOrders([]);
+                    console.error("Failed to fetch customer orders:", orderRes.data);
+                }
+            } catch (error: any) {
+                if (!isMounted) return;
+
+                console.error(
+                    "Customer orders error:",
+                    error.response?.data || error.message
+                );
+
+                setOrders([]);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchOrders();
+
+        return () => {
+            isMounted = false;
+        };
     }, [storeSlug, user, authLoading, navigate]);
-
     if (authLoading || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white text-neutral-400 text-xs font-mono">

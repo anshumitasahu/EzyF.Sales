@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { requireAuth, requireRole } from "../MiddleWare/auth";
-import { createProduct, deleteProduct, updateProduct } from "./productControllers";
+import { createProduct, deleteProduct, getProducts, updateProduct } from "./productControllers";
 
 const productRouter = Router();
 
-productRouter.post("/", requireRole(["merchant"]), createProduct);
-productRouter.put("/", requireAuth, requireRole(["merchant"]), updateProduct);
-productRouter.delete("/", requireAuth, requireRole(["merchant"]), deleteProduct);
+productRouter.get("/", requireAuth, requireRole(["merchant"]), getProducts)
+productRouter.post("/", requireAuth, requireRole(["merchant"]), createProduct);
+productRouter.put("/:id", requireAuth, requireRole(["merchant"]), updateProduct);
+productRouter.delete("/:id", requireAuth, requireRole(["merchant"]), deleteProduct);
 
 export default productRouter;

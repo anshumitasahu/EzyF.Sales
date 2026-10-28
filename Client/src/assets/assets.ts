@@ -277,22 +277,22 @@ export const DUMMY_STORES = [
 export const DUMMY_CATEGORIES = [
     {
         id: 1,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men",
         slug: "men",
     },
     {
         id: 2,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women",
         slug: "women",
     },
     {
         id: 3,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Kids",
         slug: "kids",
     },
@@ -336,8 +336,8 @@ export const DUMMY_CATEGORIES = [
 export const DUMMY_PRODUCTS = [
     {
         id: 1,
-        store_id: 1,
-        store_slug: "forever",
+        store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -361,8 +361,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 2,
-        store_id: 1,
-        store_slug: "forever",
+        store_id: 7,
+        store_slug: "aaaaaa",
         name: "Boy Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -386,8 +386,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 3,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -411,8 +411,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 4,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -436,8 +436,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 5,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Zip-Front Relaxed Fit Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -461,8 +461,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 6,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -486,8 +486,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 7,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Printed Plain Cotton Shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -511,8 +511,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 8,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -536,8 +536,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 9,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -561,8 +561,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 10,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -586,8 +586,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 11,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Boy Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -611,8 +611,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 12,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Slim Fit Relaxed Denim Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -636,8 +636,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 13,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -661,8 +661,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 14,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Tapered Fit Flat-Front Trousers",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -686,8 +686,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 15,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -711,8 +711,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 16,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -736,8 +736,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 17,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -761,8 +761,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 18,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Zip-Front Relaxed Fit Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -786,8 +786,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 19,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Zip-Front Relaxed Fit Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -811,8 +811,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 20,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Kid Tapered Slim Fit Trouser",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -836,8 +836,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 21,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -861,8 +861,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 22,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Slim Fit Relaxed Denim Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -886,8 +886,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 23,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -911,8 +911,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 24,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Palazzo Pants with Waist Belt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -936,8 +936,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 25,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -961,8 +961,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 26,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Palazzo Pants with Waist Belt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -986,8 +986,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 27,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1011,8 +1011,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 28,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Boy Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1036,8 +1036,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 29,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1061,8 +1061,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 30,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Slim Fit Relaxed Denim Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1086,8 +1086,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 31,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Boy Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1111,8 +1111,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 32,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Slim Fit Relaxed Denim Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1136,8 +1136,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 33,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Slim Fit Relaxed Denim Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1161,8 +1161,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 34,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Zip-Front Relaxed Fit Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1186,8 +1186,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 35,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Tapered Fit Flat-Front Trousers",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1211,8 +1211,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 36,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1236,8 +1236,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 37,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Girls Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1261,8 +1261,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 38,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1286,8 +1286,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 39,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Boy Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1311,8 +1311,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 40,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1336,8 +1336,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 41,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Slim Fit Relaxed Denim Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1361,8 +1361,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 42,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Zip-Front Relaxed Fit Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1386,8 +1386,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 43,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Zip-Front Relaxed Fit Jacket",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1411,8 +1411,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 44,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Kid Tapered Slim Fit Trouser",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1436,8 +1436,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 45,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Tapered Fit Flat-Front Trousers",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1461,8 +1461,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 46,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Kid Tapered Slim Fit Trouser",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1486,8 +1486,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 47,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1511,8 +1511,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 48,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Kid Tapered Slim Fit Trouser",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1536,8 +1536,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 49,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Women Round Neck Cotton Top",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1561,8 +1561,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 50,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Boy Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1586,8 +1586,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 51,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Round Neck Pure Cotton T-shirt",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1616,8 +1616,8 @@ export const DUMMY_PRODUCTS = [
     },
     {
         id: 52,
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         name: "Men Tapered Fit Flat-Front Trousers",
         description:
             "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
@@ -1919,7 +1919,7 @@ export const DUMMY_USERS = [
         name: "Forever Apparel",
         email: "merchant1@example.com",
         role: "merchant",
-        store_id: 1,
+  store_id: 7,
     },
     {
         id: 3,
@@ -1940,7 +1940,7 @@ export const DUMMY_USERS = [
         name: "Emma Watson",
         email: "customer1@example.com",
         role: "customer",
-        store_id: 1,
+  store_id: 7,
     },
     {
         id: 6,
@@ -1962,8 +1962,8 @@ export const DUMMY_ORDERS = [
     {
         id: 1,
         order_number: "ORD-FOREVER-1001",
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         store_name: "Forever",
         store_logo: "/logo_4.svg",
         store_accent_color: "#ff9500",
@@ -1998,8 +1998,8 @@ export const DUMMY_ORDERS = [
     {
         id: 2,
         order_number: "ORD-FOREVER-1002",
-        store_id: 1,
-        store_slug: "forever",
+  store_id: 7,
+        store_slug: "aaaaaa",
         store_name: "Forever",
         store_logo: "/logo_4.svg",
         store_accent_color: "#ff9500",
@@ -2122,8 +2122,8 @@ export const DUMMY_MERCHANT_ANALYTICS = {
         {
             id: 1,
             order_number: "ORD-FOREVER-1001",
-            store_id: 1,
-            store_slug: "forever",
+      store_id: 7,
+            store_slug: "aaaaaa",
             store_name: "Forever",
             store_logo: "/logo_4.svg",
             store_accent_color: "#ff9500",
@@ -2158,8 +2158,8 @@ export const DUMMY_MERCHANT_ANALYTICS = {
         {
             id: 2,
             order_number: "ORD-FOREVER-1002",
-            store_id: 1,
-            store_slug: "forever",
+      store_id: 7,
+            store_slug: "aaaaaa",
             store_name: "Forever",
             store_logo: "/logo_4.svg",
             store_accent_color: "#ff9500",

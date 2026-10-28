@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { DUMMY_STORES } from "../../assets/assets";
 import { Navbar } from "../../components/Navbar";
 import { LandingHero } from "../../components/public/landing/LandingHero";
 import { LandingFeatures } from "../../components/public/landing/LandingFeatures";
@@ -7,12 +6,13 @@ import { LandingStoreShowcase } from "../../components/public/landing/LandingSto
 import { LandingFaq } from "../../components/public/landing/LandingFaq";
 import { LandingCta } from "../../components/public/landing/LandingCta";
 import { LandingFooter } from "../../components/public/landing/LandingFooter";
+import { api } from "../../config/api";
 
 export const LandingPage: React.FC = () => {
-    const [stores, setStores] = useState<any[]>(DUMMY_STORES);
+    const [stores, setStores] = useState<any[]>([]);
 
     useEffect(() => {
-        setStores(DUMMY_STORES);
+        api.get("/api/store/public/featured").then((res) => res.data.success && setStores(res.data.stores)).catch(() => {})
     }, []);
 
     return (

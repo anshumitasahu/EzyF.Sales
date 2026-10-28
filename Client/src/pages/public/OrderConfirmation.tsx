@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { DUMMY_ORDERS, DUMMY_STORES } from "../../assets/assets";
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 export const OrderConfirmation: React.FC = () => {
     const { storeSlug, orderNumber } = useParams<{ storeSlug: string; orderNumber: string }>();
@@ -12,53 +12,12 @@ export const OrderConfirmation: React.FC = () => {
 
     useEffect(() => {
         if (orderNumber) {
-            const matchedOrder = DUMMY_ORDERS.find((o) => o.order_number === orderNumber);
-            const currentStore = DUMMY_STORES.find((s) => s.slug === storeSlug) || DUMMY_STORES[0];
-
-            if (matchedOrder) {
-                setOrder(matchedOrder);
-            } else {
-                const fallbackOrder = {
-                    id: Date.now(),
-                    order_number: orderNumber,
-                    store_id: currentStore.id,
-                    store_slug: currentStore.slug,
-                    store_name: currentStore.name,
-                    store_logo: currentStore.logo_url,
-                    store_accent_color: currentStore.accent_color,
-                    customer_name: "Customer",
-                    customer_email: "customer@example.com",
-                    customer_phone: "+1 (555) 123-4567",
-                    items: [
-                        {
-                            productId: 1,
-                            name: "Selected Store Item",
-                            price: 50,
-                            quantity: 1,
-                            variant: "Standard",
-                            image: currentStore.banner_url || "https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=600&auto=format&fit=crop&q=80",
-                        },
-                    ],
-                    subtotal: 50,
-                    shipping_cost: currentStore.shipping_fee,
-                    total: 50 + currentStore.shipping_fee,
-                    payment_status: "pending",
-                    order_status: "placed",
-                    tracking_number: `TRK-${(storeSlug || "ORD").toUpperCase().slice(0, 3)}-${Math.floor(1000 + Math.random() * 9000)}`,
-                    shipping_address: {
-                        street: "123 Market Street",
-                        city: "San Francisco",
-                        state: "CA",
-                        zip: "94105",
-                        country: "United States",
-                    },
-                    created_at: new Date().toISOString(),
-                };
-                setOrder(fallbackOrder);
-            }
-            setLoading(false);
+            api.get(`/api/orders/receipt/${orderNumber}`)
+            .then((res) => res.data.success && setOrder(res.data.order))
+            .catch(console.error)
+            .finally(() => setLoading(false))
         }
-    }, [orderNumber, storeSlug]);
+    }, [orderNumber]);
 
     if (loading)
         return (
@@ -153,12 +112,12 @@ export const OrderConfirmation: React.FC = () => {
                             { label: "Subtotal", value: `$${Number(order.subtotal).toFixed(2)}`, cls: "text-neutral-600" },
                             ...(Number(order.discount) > 0
                                 ? [
-                                      {
-                                          label: "Discount",
-                                          value: `-$${Number(order.discount).toFixed(2)}`,
-                                          cls: "store-accent-text font-medium",
-                                      },
-                                  ]
+                                    {
+                                        label: "Discount",
+                                        value: `-$${Number(order.discount).toFixed(2)}`,
+                                        cls: "store-accent-text font-medium",
+                                    },
+                                ]
                                 : []),
                             {
                                 label: "Shipping",

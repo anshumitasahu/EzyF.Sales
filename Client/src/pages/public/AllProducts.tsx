@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { DUMMY_STORES, DUMMY_PRODUCTS } from "../../assets/assets";
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { StoreFooter } from "../../components/StoreFooter";
 import { ProductCard, type ProductCardItem } from "../../components/common/ProductCard";
@@ -8,6 +7,7 @@ import { useCart } from "../../context/CartContext";
 import { Search, X, ChevronRight, ShoppingBag, ArrowUpDown } from "lucide-react";
 import { Spinner } from "../../components/common/Spinner";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 const SORT_OPTIONS = [
     { value: "featured", label: "Featured" },
@@ -40,19 +40,43 @@ export const AllProducts: React.FC = () => {
         }
     }, [storeSlug]);
 
-    const fetchInitialData = (slug: string) => {
+    const fetchInitialData = async (slug: string) => {
         setLoading(true);
         setError(null);
-        const currentStore = DUMMY_STORES.find((s) => s.slug === slug);
-        if (!currentStore) {
-            setError("Failed to load store products");
+
+        try {
+            const storeRes = await api.get(
+                `/api/store/slug/${encodeURIComponent(slug)}`
+            );
+            if (!storeRes.data.success || !storeRes.data.store) {
+                throw new Error("Store not found");
+            }
+            setStore(storeRes.data.store);
+
+            try {
+                const prodRes = await api.get("/api/products", {
+                    params: {
+                        storeSlug: slug,
+                        status: "active",
+                    },
+                });
+
+                if (prodRes.data.success) {
+                    setProducts(prodRes.data.products ?? []);
+                } else {
+                    setProducts([]);
+                    console.error("Products API returned an unsuccessful response:", prodRes.data);
+                }
+            } catch (productError: any) {
+                console.error("Failed to fetch products:", productError.response?.data || productError.message);
+                setProducts([]);
+            }
+        } catch (err: any) {
+            console.error("Failed to fetch store:", err.response?.data || err.message);
+            setError(err.response?.data?.message || err.message || "Failed to load store");
+        } finally {
             setLoading(false);
-            return;
         }
-        setStore(currentStore);
-        const storeProducts = DUMMY_PRODUCTS.filter((p) => p.store_slug === slug && p.status === "active");
-        setProducts(storeProducts);
-        setLoading(false);
     };
 
     useEffect(() => {

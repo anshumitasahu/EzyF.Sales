@@ -122,6 +122,11 @@ export const requireRole = (roles: Array<"admin" | "merchant" | "customer">) => 
     return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
         if (!req.user || !roles.includes(req.user.role)) {
             res.status(403).json({ success: false, message: "Forbidden: Access denied" });
+            console.log("Role check:", {
+                user: req.user?.id,
+                role: req.user?.role,
+                allowedRoles: roles,
+            });
             return;
         }
         next();

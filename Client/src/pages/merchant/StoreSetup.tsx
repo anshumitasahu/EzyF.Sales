@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
-import { useAuth, type Store as StoreType } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { Store, ArrowRight, Upload } from "lucide-react";
 import toast from "react-hot-toast";
+import { api } from "../../config/api";
 
 export const StoreSetup: React.FC = () => {
     const { user, store, setStore, loading: authLoading } = useAuth();
@@ -33,7 +34,6 @@ export const StoreSetup: React.FC = () => {
         return <Navigate to="/merchant/login" replace />;
     }
 
-    // Admins cannot create stores or become merchants
     if (user.role === "admin") {
         return <Navigate to="/admin" replace />;
     }
@@ -54,18 +54,29 @@ export const StoreSetup: React.FC = () => {
         }
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: "logo" | "banner") => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "logo" | "banner") => {
         if (!e.target.files || !e.target.files[0]) return;
         const file = e.target.files[0];
-        if (field === "logo") setUploadingLogo(true);
-        const previewUrl = URL.createObjectURL(file);
-        if (field === "logo") {
-            setLogoUrl(previewUrl);
-            setUploadingLogo(false);
-        } else {
-            setBannerUrl(previewUrl);
+        const formData = new FormData();
+        formData.append("image", file);
+
+        if (field === "logo") setUploadingLogo(true)
+
+        try {
+            const res = await api.post("/api/upload/single", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            })
+
+            if (res.data.success) {
+                if (field === "logo") setLogoUrl(res.data.url)
+                else setBannerUrl(res.data.url);
+                toast.success("image uploaded")
+            }
+        } catch {
+            toast.error("image upload failed")
+        } finally {
+            if (field === "logo") setUploadingLogo(false);
         }
-        toast.success("Image selected!");
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -76,28 +87,29 @@ export const StoreSetup: React.FC = () => {
         }
 
         setLoading(true);
-        setTimeout(() => {
-            const newStore: StoreType = {
-                id: Date.now(),
-                merchant_id: user.id,
+        try {
+            const res = await api.post("/api/store", {
                 name: name.trim(),
-                slug: slug.trim() || name.toLowerCase().replace(/\s+/g, "-"),
+                slug: slug.trim(),
                 description,
                 currency,
                 shipping_fee: Number(shippingFee) || 0,
-                free_shipping_threshold: Number(freeShippingThreshold) || 0,
-                logo_url: logoUrl || "/logo_4.svg",
-                banner_url: bannerUrl || "/storefront_hero_1.png",
+                free_shipping_dthreshold: Number(freeShippingThreshold) || 0,
+                logo_url: logoUrl,
+                banner_url: bannerUrl,
                 hero_style: "hero1",
-                status: "active",
-                accent_color: "#ff9500",
-            };
+            })
 
-            setStore(newStore);
+            if (res.data.success) {
+                setStore(res.data.store);
+                toast.success("Store created successfully!");
+                navigate("/merchant")
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to create store")
+        } finally {
             setLoading(false);
-            toast.success("Store created successfully!");
-            navigate("/merchant");
-        }, 300);
+        }
     };
 
     return (

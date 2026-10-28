@@ -5,12 +5,12 @@ import cors from 'cors';
 // import AdminAuthRoutes from "./src/AdminLogin/AdminLoginRoute";
 import categoryRouter from './src/Category/categoryRoutes';
 import uploadRouter from './src/UploadImage/uploadRoutes';
-import storeRouter from './src/UploadImage/storeRoutes';
+import storeRouter from './src/Store/storeRoutes';
 import productRouter from './src/Products/productRoutes';
 import orderRouter from './src/Order/orderRoutes';
 import analyticsRouter from './src/Analytics/AnalyticsRoutes';
 
-const PORT = 3000;
+const PORT = 4000;
 
 const app: Express = express();
 app.use(cors());
@@ -25,8 +25,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use("/api/categories", categoryRouter);
-app.use("/api/uppload", uploadRouter);
-app.use("/api/stores", storeRouter);
+app.use("/api/upload", uploadRouter);
+app.use("/api/store", storeRouter);
 app.use("/api/products", productRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/analytics", analyticsRouter);

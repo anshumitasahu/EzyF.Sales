@@ -40,7 +40,7 @@ export const createStore = async (req: AuthenticatedRequest, res: Response): Pro
             where: { slug: finalSlug },
             select: { id: true },
         })
-        if (!slugCheck) {
+        if (slugCheck) {
             res.status(400).json({ success: false, message: "Store URL slug already taken. Please choose another" });
             return;
         }
@@ -89,7 +89,7 @@ export const getMyStore = async (req: AuthenticatedRequest, res: Response): Prom
             where: { merchant_id: merchantId },
         })
 
-        res.json({ success: true, stroe: store || null });
+        res.json({ success: true, store: store || null });
 
     } catch (error: any) {
         console.error("getMyStore error:", error);

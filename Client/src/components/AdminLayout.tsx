@@ -6,7 +6,7 @@ import { Spinner } from "./common/Spinner";
 
 const NAV = [
     { name: "Overview", path: "/admin", icon: BarChart3 },
-    { name: "Stores", path: "/admin/stores", icon: Store },
+    { name: "Stores", path: "/admin/store", icon: Store },
     { name: "Merchants", path: "/admin/merchants", icon: Users },
 ];
 

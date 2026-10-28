@@ -18,7 +18,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
         if (!customerName || !customerEmail || !shippingAddress) {
             res.status(400).json({
                 success: false,
-                messaage: "Customer details and shipping address are required"
+                message: "Customer details and shipping address are required"
             });
             return;
         }
@@ -27,11 +27,11 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
             await findStore({ id: Number(storeId) }) : null;
 
         if (!targetStore) {
-            res.status(404).json({ success: false, meassage: "Store not found" });
+            res.status(404).json({ success: false, message: "Store not found" });
             return;
         }
 
-        if (targetStore.status = "suspended") {
+        if (targetStore.status === "suspended") {
             res.status(403).json({ success: false, message: "This store is suspended" });
             return;
         }
@@ -46,7 +46,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
                 return;
             }
 
-            const qty = Math.max(1, Number(item.quuatity) || 1);
+            const qty = Math.max(1, Number(item.quantity) || 1);
             if ((product.stock ?? 0) < qty) {
                 res.status(400).json({ success: false, message: `Not ennough stock for ${product.name}. Available: ${product.stock}` });
                 return;
@@ -127,39 +127,124 @@ export const getMerchantOrders = async (req: AuthenticatedRequest, res: Response
 
 export const updateOrderStatus = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        const store = await prisma.stores.findFirst({ where: { merchant_id: req.user?.id } });
-
-        if (!store) {
-            res.status(404).json({ success: false, message: "Store not found" });
+        if (!req.user?.id) {
+            res.status(401).json({
+                success: false,
+                message: "Authentication required",
+            });
             return;
         }
 
-        const { id } = req.params;
+        const store = await prisma.stores.findFirst({
+            where: {
+                merchant_id: req.user.id,
+            },
+        });
+
+        if (!store) {
+            res.status(404).json({
+                success: false,
+                message: "Store not found",
+            });
+            return;
+        }
+
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid order ID",
+            });
+            return;
+        }
+
         const { order_status, tracking_number, payment_status } = req.body;
 
-        const existing = await prisma.orders.findFirst({ where: { id: Number(id), store_id: store.id } })
+        const validOrderStatuses = [
+            "placed",
+            "processing",
+            "shipped",
+            "delivered",
+            "cancelled",
+        ];
+
+        const validPaymentStatuses = [
+            "pending",
+            "paid",
+            "failed",
+            "refunded",
+        ];
+
+        if (
+            order_status !== undefined &&
+            !validOrderStatuses.includes(order_status)
+        ) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid order status",
+            });
+            return;
+        }
+
+        if (
+            payment_status !== undefined &&
+            !validPaymentStatuses.includes(payment_status)
+        ) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid payment status",
+            });
+            return;
+        }
+
+        const existing = await prisma.orders.findFirst({
+            where: {
+                id,
+                store_id: store.id,
+            },
+        });
 
         if (!existing) {
-            res.status(404).json({ success: false, message: "Order not found" });
+            res.status(404).json({
+                success: false,
+                message: "Order not found",
+            });
             return;
         }
 
         const updated = await prisma.orders.update({
-            where: { id: Number(id) },
+            where: {
+                id: existing.id,
+            },
             data: {
-                order_status: order_status || existing.order_status,
-                tracking_number: tracking_number !== undefined ? tracking_number : existing.tracking_number,
-                payment_status: payment_status || existing.payment_status,
-            }
-        })
+                order_status:
+                    order_status ?? existing.order_status,
 
-        res.json({ success: true, message: "Order updated successfully", order: updated });
+                tracking_number:
+                    tracking_number !== undefined
+                        ? tracking_number
+                        : existing.tracking_number,
 
-    } catch (error: any) {
+                payment_status:
+                    payment_status ?? existing.payment_status,
+            },
+        });
+
+        res.json({
+            success: true,
+            message: "Order updated successfully",
+            order: updated,
+        });
+    } catch (error) {
         console.error("updateOrderStatus error:", error);
-        res.status(500).json({ success: false, message: "Failed to update order status" })
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to update order status",
+        });
     }
-}
+};
 
 export const getOrderRecipt = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
@@ -208,7 +293,15 @@ export const getCustomerOrders = async (req: AuthenticatedRequest, res: Response
             ]
         }
 
-        if (targetStore) {
+        if (storeSlug || storeId) {
+            if (!targetStore) {
+                res.status(404).json({
+                    success: false,
+                    message: "Store not found",
+                });
+                return;
+            }
+
             whereClause.store_id = targetStore.id;
         }
 

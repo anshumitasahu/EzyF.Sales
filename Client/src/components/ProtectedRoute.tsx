@@ -8,6 +8,8 @@ interface ProtectedRouteProps {
     redirectTo?: string;
 }
 
+
+
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
     allowedRoles = ["merchant"],
@@ -45,6 +47,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (!isAllowed) {
         return <Navigate to={redirectTo} state={{ from: location }} replace />;
     }
-
+    console.log({ path: location.pathname, role: user?.role, store: !!store, loading });
     return <>{children}</>;
 };

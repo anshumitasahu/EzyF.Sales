@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
-import { DUMMY_STORES } from "../../assets/assets";
+import { useCart } from "../../context/CartContext";;
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { ShoppingBag, ArrowRight, ArrowLeft } from "lucide-react";
 import { Spinner } from "../../components/common/Spinner";
@@ -9,6 +8,7 @@ import { CartShippingProgress } from "../../components/public/cart/CartShippingP
 import { CartItemList } from "../../components/public/cart/CartItemList";
 import { CartSummarySidebar } from "../../components/public/cart/CartSummarySidebar";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 export const CartPage: React.FC = () => {
     const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -21,11 +21,11 @@ export const CartPage: React.FC = () => {
     useEffect(() => {
         if (storeSlug) {
             setStoreSlug(storeSlug);
-            const currentStore = DUMMY_STORES.find((s) => s.slug === storeSlug) || DUMMY_STORES[0];
-            setStore(currentStore);
-            setLoading(false);
+            api.get(`/api/stores/slug/${storeSlug}`).then((res) => {
+                if (res.data.success) setStore(res.data.store);
+            }).catch(console.error).finally(() => setLoading(false))
         }
-    }, [storeSlug, setStoreSlug]);
+    }, [storeSlug,]);
 
     if (loading) return <Spinner fullScreen />;
 

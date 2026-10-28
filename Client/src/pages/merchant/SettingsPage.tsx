@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import { DUMMY_STORES } from "../../assets/assets";
 import { useAuth } from "../../context/AuthContext";
 import { MerchantLayout } from "../../components/MerchantLayout";
 import toast from "react-hot-toast";
@@ -8,6 +7,7 @@ import { StoreShippingForm } from "../../components/merchant/settings/StoreShipp
 import { Spinner } from "../../components/common/Spinner";
 import { StoreHeroStyleSelector, type HeroStyleType } from "../../components/merchant/settings/StoreHeroStyleSelector";
 import { StoreAccentColorSelector } from "../../components/merchant/settings/StoreAccentColorSelector";
+import { api } from "../../config/api";
 
 export const SettingsPage: React.FC = () => {
     const { store, setStore } = useAuth();
@@ -38,44 +38,58 @@ export const SettingsPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const current = store || DUMMY_STORES[0];
-        if (!store && current) {
-            setStore(current as any);
+        if (store) {
+            setName(store.name || "");
+            setDescription(store.description || "");
+            setCurrency(store.currency || "USD");
+            setLogoUrl(store.logo_url || "");
+            setBannerUrl(store.banner_url || "");
+            setShippingFee(store.shipping_fee?.toString() || "0");
+            setFreeShippingThreshold(store.free_shipping_threshold?.toString() || "0");
+            setHeroStyle((store.hero_style as HeroStyleType) || "hero1");
+            setAccentColor(store.accent_color || "#ff9500");
+            setLoading(false);
         }
-        setName(current.name || "");
-        setDescription(current.description || "");
-        setCurrency(current.currency || "USD");
-        setLogoUrl(current.logo_url || "");
-        setBannerUrl(current.banner_url || "");
-        setShippingFee(current.shipping_fee?.toString() || "0");
-        setFreeShippingThreshold(current.free_shipping_threshold?.toString() || "0");
-        setHeroStyle((current.hero_style as HeroStyleType) || "hero1");
-        setAccentColor(current.accent_color || "#ff9500");
-        setLoading(false);
     }, [store]);
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: "logo" | "banner") => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "logo" | "banner") => {
         if (!e.target.files || !e.target.files[0]) return;
         const file = e.target.files[0];
+
+        const fd = new FormData();
+        fd.append("image", file);
+
         if (field === "logo") setUploadingLogo(true);
         else setUploadingBanner(true);
-        const previewUrl = URL.createObjectURL(file);
-        if (field === "logo") {
-            setLogoUrl(previewUrl);
-            setUploadingLogo(false);
-        } else {
-            setBannerUrl(previewUrl);
-            setUploadingBanner(false);
+
+        try {
+            const res = await api.post("/api/upload/single", fd, {
+                headers: { "Content-Type": "multipart/form-data" },
+            })
+            if (res.data.success) {
+                if (field === "logo") setLogoUrl(res.data.url)
+                else setBannerUrl(res.data.url)
+                toast.success("Image uploaded")
+            }
+        } catch {
+            toast.error("Upload failed");
+        } finally {
+            if (field === 'logo') setUploadingLogo(false);
+            else setUploadingBanner(false);
         }
-        toast.success("Image selected!");
     };
 
-    const handleHeroStyleChange = (newStyle: HeroStyleType) => {
+    const handleHeroStyleChange = async (newStyle: HeroStyleType) => {
         setHeroStyle(newStyle);
-        if (store) {
-            setStore({ ...store, hero_style: newStyle });
+        try {
+            const res = await api.put("/api/store/me", { hero_style: newStyle })
+            if (res.data.success) {
+                setStore(res.data.store);
+                toast.success("hero layout saved!");
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to save hero layout");
         }
-        toast.success("Hero layout saved!");
     };
 
     const handleAccentColorChange = (newColor: string) => {
@@ -83,20 +97,25 @@ export const SettingsPage: React.FC = () => {
         if (accentColorTimeoutRef.current) {
             clearTimeout(accentColorTimeoutRef.current);
         }
-        accentColorTimeoutRef.current = setTimeout(() => {
-            if (store) {
-                setStore({ ...store, accent_color: newColor });
+        accentColorTimeoutRef.current = setTimeout(async () => {
+            try {
+                const res = await api.put("/api/store/me", { accent_color: newColor });
+                if (res.data.success) {
+                    setStore(res.data.store);
+                    toast.success("Accent color saved");
+                }
+            } catch (err: any) {
+                toast.error(err.response?.data?.message || "Failed to save accent color")
             }
-            toast.success("Accent color saved!");
         }, 350);
     };
 
-    const handleSave = (e: React.FormEvent) => {
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        setTimeout(() => {
-            const updated = {
-                ...(store || DUMMY_STORES[0]),
+
+        try {
+            const res = await api.put("/api/store/me", {
                 name: name.trim(),
                 description: description.trim(),
                 currency,
@@ -106,11 +125,17 @@ export const SettingsPage: React.FC = () => {
                 free_shipping_threshold: Number(freeShippingThreshold) || 0,
                 hero_style: heroStyle,
                 accent_color: accentColor,
-            };
-            setStore(updated as any);
-            setSaving(false);
-            toast.success("Store settings updated successfully!");
-        }, 300);
+            })
+
+            if (res.data.success) {
+                setStore(res.data.store);
+                toast.success("Store settings updated successfully");
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to update settings")
+        } finally {
+            setSaving(false)
+        }
     };
 
     if (loading) {

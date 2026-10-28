@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { DUMMY_STORES, DUMMY_PRODUCTS } from "../../assets/assets";
 import { Spinner } from "../../components/common/Spinner";
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { StoreFooter } from "../../components/StoreFooter";
@@ -12,6 +11,7 @@ import { StoreTestimonials } from "../../components/public/storefront/StoreTesti
 import { StoreFaq } from "../../components/public/storefront/StoreFaq";
 import { LandingCta } from "../../components/public/landing/LandingCta";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 export const Storefront: React.FC = () => {
     const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -30,19 +30,55 @@ export const Storefront: React.FC = () => {
         }
     }, [storeSlug]);
 
-    const fetchStoreData = (slug: string) => {
+    const fetchStoreData = async (slug: string) => {
         setLoading(true);
         setError(null);
-        const currentStore = DUMMY_STORES.find((s) => s.slug === slug);
-        if (!currentStore) {
-            setError("This store could not be found.");
+
+        try {
+            // 1. Fetch the public store by its slug
+            const storeRes = await api.get(`/api/store/slug/${slug}`);
+
+            console.log("Store response:", storeRes.data);
+
+            if (!storeRes.data.success || !storeRes.data.store) {
+                throw new Error("Store not found");
+            }
+
+            setStore(storeRes.data.store);
+
+            // 2. Fetch products separately
+            try {
+                const productsRes = await api.get("/api/products", {
+                    params: {
+                        storeSlug: slug,
+                        status: "active",
+                    },
+                });
+
+                console.log("Products API status:", productsRes.status);
+                console.log("Products API response:", productsRes.data);
+
+                if (productsRes.data.success) {
+                    setProducts(productsRes.data.products ?? []);
+                } else {
+                    console.error("Products API returned success: false");
+                    setProducts([]);
+                }
+            } catch (productError: any) {
+                console.error(
+                    "Failed to fetch public products:",
+                    productError.response?.status,
+                    productError.response?.data || productError.message
+                );
+
+                setProducts([]);
+            }
+        } catch (err: any) {
+            console.error("Failed to fetch public store:", err.response?.data || err.message);
+            setError(err.response?.data?.message || err.message || "Failed to load store");
+        } finally {
             setLoading(false);
-            return;
         }
-        const storeProducts = DUMMY_PRODUCTS.filter((p) => p.store_slug === slug && p.status === "active");
-        setStore(currentStore);
-        setProducts(storeProducts);
-        setLoading(false);
     };
 
     const handleQuickAdd = (e: React.MouseEvent, p: any) => {
@@ -50,12 +86,12 @@ export const Storefront: React.FC = () => {
         e.stopPropagation();
         addToCart({
             productId: p.id,
-            name:      p.name,
-            price:     Number(p.price),
-            image:     p.images?.[0],
-            quantity:  1,
-            variant:   p.variants?.length ? `${p.variants[0].name}: ${p.variants[0].options[0]}` : undefined,
-            stock:     p.stock,
+            name: p.name,
+            price: Number(p.price),
+            image: p.images?.[0],
+            quantity: 1,
+            variant: p.variants?.length ? `${p.variants[0].name}: ${p.variants[0].options[0]}` : undefined,
+            stock: p.stock,
         });
         setAddedId(p.id);
         setTimeout(() => setAddedId(null), 1500);

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { DUMMY_PRODUCTS, DUMMY_CATEGORIES } from "../../assets/assets";
-import { useAuth } from "../../context/AuthContext";
 import { MerchantLayout } from "../../components/MerchantLayout";
 import { Plus, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { ProductTable, type ProductItem } from "../../components/merchant/products/ProductTable";
 import { ProductModal } from "../../components/merchant/products/ProductModal";
 import { type VariantGroup } from "../../components/merchant/products/ProductVariantBuilder";
+import { api } from "../../config/api";
 
 const EMPTY_FORM = {
     name: "",
@@ -22,8 +21,14 @@ const EMPTY_FORM = {
     variants: [] as VariantGroup[],
 };
 
+const fetchStoreData = async (path: string) => {
+    const storeRes = await api.get("/api/store/me");
+    if (!storeRes.data.success) return null;
+    const res = await api.get(`${path}?storeId=${storeRes.data.store.id}`);
+    return res.data.success ? res.data : null;
+}
+
 export const ProductsPage: React.FC = () => {
-    const { store } = useAuth();
     const [products, setProducts] = useState<ProductItem[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -38,13 +43,33 @@ export const ProductsPage: React.FC = () => {
     const setF = (key: keyof typeof EMPTY_FORM, val: any) => setForm((f) => ({ ...f, [key]: val }));
 
     useEffect(() => {
-        const storeSlug = store?.slug || "forever";
-        const prods = DUMMY_PRODUCTS.filter((p) => p.store_slug === storeSlug || !store?.slug);
-        const cats = DUMMY_CATEGORIES.filter((c) => c.store_slug === storeSlug || !store?.slug);
-        setProducts(prods as any);
-        setCategories(cats);
-        setLoading(false);
-    }, [store]);
+        fetchStoreData("api/products").then((d) => {
+            if (d) setProducts(d.products);
+        })
+            .catch((err) => {
+                console.error("Failed to fetch products:", err);
+            })
+            .finally(() => setLoading(false));
+        fetchStoreData("/api/categories").then((d) => {
+            if (d) setCategories(d.categories);
+        })
+            .catch((err) => {
+                console.error("Failed to fetch products:", err);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    const refetchProducts = async () => {
+        setLoading(true);
+        try {
+            const d = await fetchStoreData("api/products");
+            if (d) setProducts(d.products);
+        } catch (err) {
+            console.error("Product refetch failed:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const openCreateModal = () => {
         setEditingProduct(null);
@@ -76,14 +101,22 @@ export const ProductsPage: React.FC = () => {
         setF("imageUrlInput", "");
     };
 
-    const handleUploadImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUploadImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files?.[0]) return;
-        const file = e.target.files[0];
+        const fd = new FormData();
+        fd.append("image", e.target.files[0]);
         setUploadingImage(true);
-        const previewUrl = URL.createObjectURL(file);
-        setF("images", [...form.images, previewUrl]);
-        setUploadingImage(false);
-        toast.success("Image selected!");
+        try {
+            const res = await api.post("api/upload/single", fd, { headers: { "Content-Type": "multipart/form-data" } })
+            if (res.data.success) {
+                setF("images", [...form.images, res.data.url])
+                toast.success("Image uploaded")
+            }
+        } catch {
+            toast.error("Upload failed")
+        } finally {
+            setUploadingImage(false);
+        }
     };
 
     const handleAddVariantGroup = () => {
@@ -135,62 +168,53 @@ export const ProductsPage: React.FC = () => {
         }
     };
 
-    const handleSaveProduct = (e: React.FormEvent) => {
+    const handleSaveProduct = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.name.trim() || !form.price) {
             toast.error("Product name and price are required");
             return;
         }
 
-        const categoryObj = categories.find((c) => String(c.id) === String(form.categoryId));
-
-        if (editingProduct) {
-            setProducts((prev) =>
-                prev.map((p) =>
-                    p.id === editingProduct.id
-                        ? {
-                              ...p,
-                              name: form.name.trim(),
-                              description: form.desc.trim(),
-                              price: Number(form.price),
-                              compare_at_price: form.compareAt ? Number(form.compareAt) : null,
-                              sku: form.sku.trim() || null,
-                              stock: Number(form.stock) || 0,
-                              category_id: form.categoryId ? Number(form.categoryId) : null,
-                              category_name: categoryObj?.name || p.category_name,
-                              images: form.images,
-                              variants: form.variants,
-                              status: form.status,
-                          }
-                        : p
-                )
-            );
-            toast.success("Product updated!");
-        } else {
-            const newProd: any = {
-                id: Date.now(),
-                name: form.name.trim(),
-                description: form.desc.trim(),
-                price: Number(form.price),
-                compare_at_price: form.compareAt ? Number(form.compareAt) : null,
-                sku: form.sku.trim() || null,
-                stock: Number(form.stock) || 0,
-                category_id: form.categoryId ? Number(form.categoryId) : null,
-                category_name: categoryObj?.name || "General",
-                images: form.images.length ? form.images : ["/features_1_img.png"],
-                variants: form.variants,
-                status: form.status,
-            };
-            setProducts((prev) => [newProd, ...prev]);
-            toast.success("Product created!");
+        const payload = {
+            name: form.name.trim(),
+            description: form.desc.trim(),
+            price: Number(form.price),
+            compare_at_price: form.compareAt ? Number(form.compareAt) : null,
+            sku: form.sku.trim() || null,
+            stock: Number(form.stock) || 0,
+            category_id: form.categoryId ? Number(form.categoryId) : null,
+            images: form.images,
+            variants: form.variants,
+            status: form.status,
         }
-        setIsModalOpen(false);
+
+        try {
+            const res = editingProduct
+                ? await api.put(`/api/products/${editingProduct.id}`, payload)
+                : await api.post("/api/products", payload);
+
+            if (res.data.success) {
+                toast.success(editingProduct ? "Product updated!" : "Product created");
+                setIsModalOpen(false);
+                refetchProducts();
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to save product");
+        }
     };
 
-    const handleDeleteProduct = (id: number) => {
+    const handleDeleteProduct = async (id: number) => {
         if (!window.confirm("Are you sure you want to delete this product?")) return;
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-        toast.success("Product deleted");
+
+        try {
+            const res = await api.delete(`/api/products/${id}`);
+            if (res.data.success) {
+                toast.success("Product deleted");
+                setProducts((prev) => prev.filter((p) => p.id !== id));
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Deleted failed");
+        }
     };
 
     const filtered = products.filter(

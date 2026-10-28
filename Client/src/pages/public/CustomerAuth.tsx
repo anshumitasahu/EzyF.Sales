@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { DUMMY_STORES } from "../../assets/assets";
 import { useAuth } from "../../context/AuthContext";
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { AuthCard } from "../../components/common/AuthCard";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 export const CustomerAuth: React.FC = () => {
     const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -14,8 +14,11 @@ export const CustomerAuth: React.FC = () => {
 
     useEffect(() => {
         if (storeSlug) {
-            const foundStore = DUMMY_STORES.find((s) => s.slug === storeSlug) || DUMMY_STORES[0];
-            setStore(foundStore);
+            api.get(`api/store/slug/${storeSlug}`).then((res) => {
+                if (res.data.success) {
+                    setStore(res.data.store)
+                }
+            }).catch(console.error)
         }
     }, [storeSlug]);
 

@@ -6,16 +6,39 @@ export const optimizeDeliveryUrl = (url: string): string => {
     return url.replace(/\/image\/upload\/(?!f_auto,q_auto\/)/, "/image/upload/f_auto,q_auto/")
 }
 
+// export function applyCloudianryTransform(
+//     url: string,
+//     action: "recolor" | "bg-removal",
+//     options: { prompt?: string; toColor?: string; multiple?: boolean } = {},
+// ): string {
+//     const transfrom = action === "bg-removal"
+//         ? "e_background_removal,f_auto,q_auto"
+//         : `e_gen_recolor:prompt_${encodeURIComponent(options.prompt || "object")};to-color_${(options.toColor || "red").replace("#", "")}${options.multiple ? ";multiple_true" : ""},f_auto,q_auto`;
+
+//     return url.replace("/image/upload/", `/image/upload/${transfrom}/`)
+// }
+
 export function applyCloudianryTransform(
     url: string,
     action: "recolor" | "bg-removal",
     options: { prompt?: string; toColor?: string; multiple?: boolean } = {},
 ): string {
-    const transfrom = action === "bg-removal"
-        ? "e_background_removal,f_auto,q_auto"
-        : `e_gen_recolor:prompt_${encodeURIComponent(options.prompt || "object")};to-color_${(options.toColor || "red").replace("#", "")}${options.multiple ? ";multiple_true" : ""}, f_auto,q_auto`;
+    // 1. Clean the prompt text: remove special characters and swap spaces for underscores
+    const cleanPrompt = (options.prompt || "object")
+        .trim()
+        .replace(/\s+/g, "_"); // Replaces spaces with underscores
 
-    return url.replace("/image/upload/", `/image/upload/${transfrom}/`)
+    // 2. Clean the hex color: remove '#' and make sure it's lowercase
+    const cleanColor = (options.toColor || "red")
+        .replace("#", "")
+        .trim()
+        .toLowerCase();
+
+    const transform = action === "bg-removal"
+        ? "e_background_removal,f_auto,q_auto"
+        : `e_gen_recolor:prompt_${cleanPrompt};to-color_${cleanColor}${options.multiple ? ";multiple_true" : ""},f_auto,q_auto`;
+
+    return url.replace("/image/upload/", `/image/upload/${transform}/`);
 }
 
 export const uploadToCloudinary = async (
@@ -39,7 +62,7 @@ export const uploadToCloudinary = async (
 export const uploadSingle = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.file) {
-            res.status(400).json({ success: false, message: "No image file provied" });
+            res.status(400).json({ success: false, message: "No image file provided" });
             return;
         }
 
@@ -60,7 +83,7 @@ export const uploadMultiple = async (req: Request, res: Response): Promise<void>
     try {
         const files = (req.files as Express.Multer.File[] | [])
         if (!files.length) {
-            res.status(400).json({ success: false, message: "No image file provied" });
+            res.status(400).json({ success: false, message: "No image file provided" });
             return;
         }
 
@@ -169,8 +192,8 @@ export const generateOnModelImage = async (params: GenerateOnModelParams): Promi
         throw err;
     }
 
-    const asset = data?.data?.assests?.[0] || data?.data?.result?.assests?.[0];
-    const rawUrl = asset?.stroage?.secure_url || asset?.secure_url || data?.secure_url;
+    const asset = data?.data?.assets?.[0] || data?.data?.result?.assets?.[0];
+    const rawUrl = asset?.storage?.secure_url || asset?.secure_url || data?.secure_url;
     if (!rawUrl) throw new Error("No image URL returned from Cloudinary generation");
 
     return {

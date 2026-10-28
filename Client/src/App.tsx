@@ -112,7 +112,7 @@ export default function App() {
                         }
                     />
                     <Route
-                        path="/admin/stores"
+                        path="/admin/store"
                         element={
                             <ProtectedRoute allowedRoles={["admin"]} redirectTo="/admin/login">
                                 <StoresManagement />

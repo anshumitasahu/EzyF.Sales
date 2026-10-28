@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Palette, Scissors, Check, Loader2, X, RefreshCw, Sparkle, User, Upload } from "lucide-react";
 import toast from "react-hot-toast";
+import { api } from "../../../config/api";
 
 interface ProductAiImageModalProps {
     isOpen: boolean;
@@ -61,21 +62,30 @@ export const ProductAiImageModal: React.FC<ProductAiImageModalProps> = ({
 
     const sourceImage = images[currentImageIndex] || images[0];
 
-    const handleUploadModelFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUploadModelFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setIsUploadingModel(true);
-        setTimeout(() => {
-            const fakeUrl = URL.createObjectURL(file);
-            setModelUrl(fakeUrl);
-            toast.success("Model image uploaded successfully!");
+        try {
+            const formData = new FormData();
+            formData.append("image", file);
+            const res = await api.post("/api/upload/single", formData, {
+                headers: { "Content-Type": "multipart/force-data" },
+            })
+            if (res.data.success && res.data.url) {
+                setModelUrl(res.data.url);
+            } else {
+                toast.error(res.data.message || "Failed to upload model image");
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Model enter what object to recolor")
+        } finally {
             setIsUploadingModel(false);
-            e.target.value = "";
-        }, 500);
+        }
     };
 
-    const handleTransform = () => {
+    const handleTransform = async () => {
         if (!sourceImage) return toast.error("No image selected");
         if (activeTab === "recolor" && !prompt.trim()) {
             return toast.error("Please enter what object to recolor");
@@ -84,17 +94,42 @@ export const ProductAiImageModal: React.FC<ProductAiImageModalProps> = ({
         setIsProcessing(true);
         setTransformedUrl(null);
 
-        setTimeout(() => {
-            setTransformedUrl(sourceImage);
-            toast.success(
-                activeTab === "recolor"
-                    ? "Recolored successfully!"
-                    : activeTab === "on-model"
-                      ? "On-model photo generated successfully!"
-                      : "Background removed!",
-            );
+        try {
+            if (activeTab === "on-model") {
+                const res = await api.post("/api/upload/ai-on-model", {
+                    productImageurl: sourceImage,
+                    modelImageUrl: modelUrl.trim() || undefined,
+                    garmentType: garmentType.trim() || "jacket",
+                    pose: pose.trim() || "confident standing position",
+                    background: background.trim() || "clean, plain white background",
+                })
+
+                if (res.data.success && res.data.url) {
+                    setTransformedUrl(res.data.url);
+                    toast.success("On-model photo generated successfully");
+                } else {
+                    toast.error(res.data.message || "transformation failed")
+                }
+            } else {
+                const res = await api.post("/api/upload/ai-transform", {
+                    imageUrl: sourceImage,
+                    action: activeTab,
+                    prompt: activeTab === "recolor" ? prompt.trim() : undefined,
+                    toColor: activeTab === "recolor" ? color.replace("a", "") : undefined,
+                });
+
+                if (res.data.success && res.data.url) {
+                    setTransformedUrl(res.data.url);
+                    toast.success(activeTab === "recolor" ? "Recolored successfully!" : "Background removed!");
+                } else {
+                    toast.error(res.data.message || "Transformation failed")
+                }
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "AI Transformation failed");
+        } finally {
             setIsProcessing(false);
-        }, 600);
+        }
     };
 
     const handleSave = (replace: boolean) => {
@@ -144,11 +179,10 @@ export const ProductAiImageModal: React.FC<ProductAiImageModalProps> = ({
                                     setCurrentImageIndex(idx);
                                     setTransformedUrl(null);
                                 }}
-                                className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 shrink-0 transition cursor-pointer ${
-                                    currentImageIndex === idx
-                                        ? "border-emerald-600 ring-2 ring-emerald-500/20"
-                                        : "border-neutral-200 opacity-60"
-                                }`}
+                                className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 shrink-0 transition cursor-pointer ${currentImageIndex === idx
+                                    ? "border-emerald-600 ring-2 ring-emerald-500/20"
+                                    : "border-neutral-200 opacity-60"
+                                    }`}
                             >
                                 <img src={img} alt="" className="w-full h-full object-cover" />
                             </button>
@@ -164,11 +198,10 @@ export const ProductAiImageModal: React.FC<ProductAiImageModalProps> = ({
                             setActiveTab("recolor");
                             setTransformedUrl(null);
                         }}
-                        className={`pb-2 text-xs font-medium inline-flex items-center gap-1.5 border-b-2 transition cursor-pointer ${
-                            activeTab === "recolor"
-                                ? "border-emerald-600 text-emerald-700"
-                                : "border-transparent text-neutral-400 hover:text-neutral-700"
-                        }`}
+                        className={`pb-2 text-xs font-medium inline-flex items-center gap-1.5 border-b-2 transition cursor-pointer ${activeTab === "recolor"
+                            ? "border-emerald-600 text-emerald-700"
+                            : "border-transparent text-neutral-400 hover:text-neutral-700"
+                            }`}
                     >
                         <Palette className="w-3.5 h-3.5" /> Recolor
                     </button>
@@ -178,11 +211,10 @@ export const ProductAiImageModal: React.FC<ProductAiImageModalProps> = ({
                             setActiveTab("bg-removal");
                             setTransformedUrl(null);
                         }}
-                        className={`pb-2 text-xs font-medium inline-flex items-center gap-1.5 border-b-2 transition cursor-pointer ${
-                            activeTab === "bg-removal"
-                                ? "border-emerald-600 text-emerald-700"
-                                : "border-transparent text-neutral-400 hover:text-neutral-700"
-                        }`}
+                        className={`pb-2 text-xs font-medium inline-flex items-center gap-1.5 border-b-2 transition cursor-pointer ${activeTab === "bg-removal"
+                            ? "border-emerald-600 text-emerald-700"
+                            : "border-transparent text-neutral-400 hover:text-neutral-700"
+                            }`}
                     >
                         <Scissors className="w-3.5 h-3.5" /> Remove Background
                     </button>
@@ -192,11 +224,10 @@ export const ProductAiImageModal: React.FC<ProductAiImageModalProps> = ({
                             setActiveTab("on-model");
                             setTransformedUrl(null);
                         }}
-                        className={`pb-2 text-xs font-medium inline-flex items-center gap-1.5 border-b-2 transition cursor-pointer ${
-                            activeTab === "on-model"
-                                ? "border-emerald-600 text-emerald-700"
-                                : "border-transparent text-neutral-400 hover:text-neutral-700"
-                        }`}
+                        className={`pb-2 text-xs font-medium inline-flex items-center gap-1.5 border-b-2 transition cursor-pointer ${activeTab === "on-model"
+                            ? "border-emerald-600 text-emerald-700"
+                            : "border-transparent text-neutral-400 hover:text-neutral-700"
+                            }`}
                     >
                         <User className="w-3.5 h-3.5" /> On-Model Photo
                     </button>
@@ -344,8 +375,8 @@ export const ProductAiImageModal: React.FC<ProductAiImageModalProps> = ({
                                     {activeTab === "recolor"
                                         ? "Generate"
                                         : activeTab === "on-model"
-                                          ? "Generate On-Model"
-                                          : "Remove Background"}
+                                            ? "Generate On-Model"
+                                            : "Remove Background"}
                                 </span>
                             )}
                         </button>

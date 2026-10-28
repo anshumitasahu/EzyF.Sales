@@ -1,5 +1,4 @@
 import { neon } from "@neondatabase/serverless";
-import { timeStamp } from "node:console";
 
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), {
     status,
@@ -35,24 +34,39 @@ export default {
 
         const sql = neon(databaseUrl);
 
-        const { pathname, searchParams } = new URL(url);
+        const requestUrl = new URL(url);
+        const path =
+            requestUrl.pathname
+                .replace(/^\/api(?=\/|$)/, "")
+                .replace(/\/+$/, "") || "/";
 
-        const path = pathname.replace(/^\/api/, "").replace(/\/+$/, "") || "/";
+        const searchParams = requestUrl.searchParams;
+
+        console.log("NEON ROUTE DEBUG:", {
+            method,
+            pathname: requestUrl.pathname,
+            path,
+            storeSlug: searchParams.get("storeSlug"),
+            status: searchParams.get("status"),
+        });
 
         try {
             if (path === "/" || path === "/health") {
                 return json({
                     success: true,
-                    service: "EzyF Neon Public API",
+                    services: "EzyF Neon Public API",
+                    debugVersion: "store-route-fix-001",
+                    pathname: requestUrl.pathname,
+                    normalizedPath: path,
                     timeStamp: new Date().toISOString()
-                })
+                });
             }
 
-            if (path === "/stores/publc/featured" || path === "/stores/featured") {
+            if (path === "/store/publc/featured" || path === "/store/featured") {
                 const stores = await sql`
                 SELECT id, name, slug, logo_url, banner_url, description, currency, created_at
                 FROM stores
-                WHERE status = "active"
+                WHERE status = 'active'
                 ORDER BY created_at DESC
                 LIMIT 12
                 `;
@@ -60,40 +74,92 @@ export default {
                 return json({ success: true, stores })
             }
 
-            const storeSlugMatch = path.match(/^\/stores\/slug\/([^/]+)$/)
+            const storeSlugMatch = path.match(/^\/store\/slug\/([^/]+)$/);
+
+            console.log("Store slug match:", storeSlugMatch);
+
             if (storeSlugMatch) {
                 const slug = decodeURIComponent(storeSlugMatch[1]!);
-                const [store] = await sql`
-                SELECT id, merchant_id,name, slug, logo_url, banner_url, description, currency, status, shipping_fee, free_shipping_threshold, hero_style, accent_color, created_at
-                FROM stores
-                WHERE slug = ${slug}
-                LIMIT 1
-                `;
 
-                if (!store) return json({ success: false, message: "Store not found" }, 404)
-                if (store.status === "suspended") {
-                    return json({ success: false, message: "This store is currently suspended by platfrom administration." }, 403)
+                const [store] = await sql`
+                        SELECT
+                            id,
+                            merchant_id,
+                            name,
+                            slug,
+                            logo_url,
+                            banner_url,
+                            description,
+                            currency,
+                            status,
+                            shipping_fee,
+                            free_shipping_threshold,
+                            hero_style,
+                            accent_color,
+                            created_at
+                        FROM stores
+                        WHERE slug = ${slug}
+                        LIMIT 1
+                        `;
+
+                if (!store) {
+                    return json(
+                        { success: false, message: "Store not found" },
+                        404
+                    );
                 }
-                return json({ success: true, store })
+
+                if (store.status === "suspended") {
+                    return json(
+                        { success: false, message: "This store is suspended" },
+                        403
+                    );
+                }
+
+                return json({ success: true, store });
             }
 
-            const productMatch = path.match(/^\/products\/(\d +)$/);
+            const productMatch = path.match(/^\/products\/(\d+)$/);
+
             if (productMatch) {
                 const productId = Number(productMatch[1]);
+
                 const [product] = await sql`
-                SELECT p.id, p.store_id, p.category_id, p.name, p.description, p.price, p.compare_at_price, p.sku. p.stock, p.images, p.variants, p.status, p.created_at,
-                c.name as category_name, c.slug as category_slug,
-                s.name as store_name, s.slug as store_slug, s.status as store_status
-                FROM products p
-                LEFT JOIN categories c ON p.store_id = s.id 
-                WHERE p.id = ${productId}
-                LIMIT 1
-                `
+                    SELECT
+                        p.id,
+                        p.store_id,
+                        p.category_id,
+                        p.name,
+                        p.description,
+                        p.price,
+                        p.compare_at_price,
+                        p.sku,
+                        p.stock,
+                        p.images,
+                        p.variants,
+                        p.status,
+                        p.created_at,
+                        c.name AS category_name,
+                        c.slug AS category_slug,
+                        s.name AS store_name,
+                        s.slug AS store_slug,
+                        s.status AS store_status
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.id
+                    LEFT JOIN stores s ON p.store_id = s.id
+                    WHERE p.id = ${productId}
+                    LIMIT 1
+                    `;
 
-                if (!product) return json({ success: false, message: "Product not found" }, 404)
-                return json({ success: true, product })
+                if (!product) {
+                    return json(
+                        { success: false, message: "Product not found" },
+                        404
+                    );
+                }
+
+                return json({ success: true, product });
             }
-
             if (path === "/products") {
                 const storeSlug = searchParams.get("storeSlug");
                 const storeIdParam = searchParams.get("storeId");
@@ -117,28 +183,56 @@ export default {
 
                 const categoryId = categoryIdParam ? Number(categoryIdParam) : null;
                 const products = await sql`
-                SELECT p.id, p.store_id, p.category_id, p.name, p.description, p.price, p.compare_at_price, p.sku. p.stock, p.images, p.variants, p.status, p.created_at,
-                c.name as category_name, c.slug as category_slug,
-                FROM products p
-                LEFT JOIN categories c ON p.store_id = c.id 
-                WHERE p.store_id = ${targetStoreId}
-                AND (${status}::text IS NULL OR p.status = ${status})
-                AND (${categoryId}::int IS NULL OR p.category_id = ${categoryId})
-                AND (${search}::text IS NULL OR (
-                    p.name ILIKE "%" || ${search} || "%"
-                    OR p.description ILIKE "%" || ${search} || "%"
-                    OR p.sku ILIKE "%" || ${search} || "%"
+                    SELECT
+                      p.id,
+                      p.store_id,
+                      p.category_id,
+                      p.name,
+                      p.description,
+                      p.price,
+                      p.compare_at_price,
+                      p.sku,
+                      p.stock,
+                      p.images,
+                      p.variants,
+                      p.status,
+                      p.created_at,
+                      c.name AS category_name,
+                      c.slug AS category_slug
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.id
+                    WHERE p.store_id = ${targetStoreId}
+                      AND (${status}::text IS NULL OR p.status = ${status})
+                      AND (${categoryId}::int IS NULL OR p.category_id = ${categoryId})
+                      AND (
+                        ${search}::text IS NULL
+                        OR p.name ILIKE '%' || ${search} || '%'
+                        OR p.description ILIKE '%' || ${search} || '%'
+                        OR p.sku ILIKE '%' || ${search} || '%'
+                      )
+                    ORDER BY p.created_at DESC
+                    `;
 
-                ))
-                ORDER BY p.created_at DESC
-                `;
-                return json({ success: true, products })
+                return json({ success: true, products });
             }
 
-            return json({ success: false, message: "Route not found on neon Public API" }, 404)
+            return json(
+                {
+                    success: false,
+                    message: "Route not found on neon Public API, hehehe",
+                    requestUrl: request.url,
+                    pathname: requestUrl.pathname,
+                    normalizedPath: path,
+                    storeRouteMatched: Boolean(storeSlugMatch),
+                },
+                404
+            );
         } catch (error: any) {
-            console.error("Neon Pubnlic API error:", error)
-            return json({ success: "Internal server error" }, 500)
+            console.error("Neon Public API error:", error)
+            return json(
+                { success: false, message: "Internal server error" },
+                500
+            );
         }
     }
 }

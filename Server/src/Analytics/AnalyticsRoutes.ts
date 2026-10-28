@@ -4,7 +4,7 @@ import { getMerchantAnalytics, getPlatfromAnalytics } from "./AnalyticsControlle
 
 const analyticsRouter = Router()
 
-analyticsRouter.get("/merechant", requireAuth, requireRole(["merchant"]), getMerchantAnalytics);
+analyticsRouter.get("/merchant", requireAuth, requireRole(["merchant"]), getMerchantAnalytics);
 analyticsRouter.get("/platfrom", requireAuth, requireRole(["admin"]), getPlatfromAnalytics);
 
 export default analyticsRouter;

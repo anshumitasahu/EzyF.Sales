@@ -99,7 +99,7 @@ export const AdminDashboard: React.FC = () => {
                             <p className="text-xs text-neutral-400 mt-0.5">Top-performing tenant storefronts</p>
                         </div>
                         <Link
-                            to="/admin/stores"
+                            to="/admin/store"
                             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-medium text-neutral-900 transition"
                         >
                             <span>Manage Stores</span>

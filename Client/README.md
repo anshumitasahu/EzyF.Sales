@@ -120,7 +120,7 @@ The frontend relies on the following environment variables:
 | :--- | :--- | :--- |
 | `VITE_BASE_URL` | Base URL of the StoreiFly backend API | `http://localhost:3000` |
 | `VITE_NEON_AUTH_URL` | (Optional) URL for Neon Auth endpoint | - |
-| `VITE_NEON_FUNCTIONS_URL` | (Optional) Edge compute function URL for public product reads | - |
+| `VITE_NEON_FUNCTION_URL` | (Optional) Edge compute function URL for public product reads | - |
 
 ---
 
@@ -137,7 +137,7 @@ The frontend relies on the following environment variables:
 
 Network requests are managed via an Axios instance located at `src/config/api.ts`.
 * Automatic `Authorization: Bearer <token>` header injection for authenticated merchant and admin requests.
-* Optional edge routing: when `VITE_NEON_FUNCTIONS_URL` is set, public read operations (`/api/products`, `/api/stores/slug/*`, `/api/stores/public/featured`) route directly to serverless edge compute for low-latency responses.
+* Optional edge routing: when `VITE_NEON_FUNCTION_URL` is set, public read operations (`/api/products`, `/api/stores/slug/*`, `/api/stores/public/featured`) route directly to serverless edge compute for low-latency responses.
 
 ---
 

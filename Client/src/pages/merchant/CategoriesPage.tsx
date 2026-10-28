@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { DUMMY_CATEGORIES } from "../../assets/assets";
-import { useAuth } from "../../context/AuthContext";
 import { MerchantLayout } from "../../components/MerchantLayout";
 import { Plus, Trash2, FolderTree } from "lucide-react";
 import { Spinner } from "../../components/common/Spinner";
 import toast from "react-hot-toast";
+import { api } from "../../config/api";
 
 export const CategoriesPage: React.FC = () => {
-    const { store } = useAuth();
     const [categories, setCategories] = useState<any[]>([]);
     const [name, setName] = useState("");
     const [loading, setLoading] = useState(true);
@@ -15,38 +13,56 @@ export const CategoriesPage: React.FC = () => {
 
     useEffect(() => {
         fetchCategories();
-    }, [store]);
+    }, []);
 
-    const fetchCategories = () => {
+    const fetchCategories = async () => {
         setLoading(true);
-        const storeSlug = store?.slug || "forever";
-        const storeCats = DUMMY_CATEGORIES.filter((c) => c.store_slug === storeSlug || !store?.slug);
-        setCategories(storeCats);
-        setLoading(false);
+        try {
+            const storeRes = await api.get("/api/store/me")
+            if (storeRes.data.success) {
+                const res = await api.get(`/api/categories?storeId=${storeRes.data.store.id}`)
+                if (res.data.success) {
+                    setCategories(res.data.categories);
+                }
+                console.log("Categories response:", res.data);
+                console.log("Store ID:", storeRes.data.store?.id);
+            }
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleCreate = (e: React.FormEvent) => {
+    const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
         setSubmitting(true);
-        const newCat = {
-            id: Date.now(),
-            store_id: store?.id || 1,
-            store_slug: store?.slug || "forever",
-            name: name.trim(),
-            slug: name.trim().toLowerCase().replace(/\s+/g, "-"),
-            product_count: 0,
-        };
-        setCategories((prev) => [...prev, newCat]);
-        toast.success("Category created!");
-        setName("");
-        setSubmitting(false);
+        try {
+            const res = await api.post("/api/categories", { name: name.trim() });
+            if (res.data.success) {
+                toast.success("Category created!")
+                setName("");
+                fetchCategories();
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to create category")
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    const handleDelete = (id: number) => {
+    const handleDelete = async (id: number) => {
         if (!window.confirm("Are you sure? Products in this category will become uncategorized.")) return;
-        setCategories((prev) => prev.filter((c) => c.id !== id));
-        toast.success("Category deleted");
+        try {
+            const res = await api.delete(`/api/categories/${id}`);
+            if (res.data.success) {
+                toast.success("Category deleted");
+                setCategories((prev) => prev.filter((c) => c.id !== id))
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Delete failed");
+        }
     };
 
     return (

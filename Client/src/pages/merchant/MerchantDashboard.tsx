@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { DUMMY_MERCHANT_ANALYTICS } from "../../assets/assets";
 import { useAuth } from "../../context/AuthContext";
 import { MerchantLayout } from "../../components/MerchantLayout";
 import { DollarSign, ShoppingBag, TrendingUp, Package, AlertTriangle, ExternalLink, ArrowUpRight, Plus } from "lucide-react";
 import { Spinner } from "../../components/common/Spinner";
+import { api } from "../../config/api";
 
 export const MerchantDashboard: React.FC = () => {
     const { store } = useAuth();
-    const [analytics, setAnalytics] = useState<any>(DUMMY_MERCHANT_ANALYTICS);
-    const [loading, setLoading] = useState(false);
+    const [analytics, setAnalytics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setAnalytics(DUMMY_MERCHANT_ANALYTICS);
-        setLoading(false);
+        api.get("/api/analytics/merchant").then((res) => {
+            if (res.data.success) {
+                setAnalytics(res.data.analytics);
+            }
+        }).catch(console.error).finally(() => setLoading(false))
     }, []);
 
     if (loading) {
@@ -91,7 +94,7 @@ export const MerchantDashboard: React.FC = () => {
                             </div>
                         </div>
                         <p className="text-2xl font-semibold font-mono text-neutral-900 mt-2">
-                            ${analytics ? Number(analytics.averageOrderValue).toFixed(2) : "0.00"}
+                            ${analytics ? Number(analytics?.avgOrderValue || 0).toFixed(2) : "0.00"}
                         </p>
                         <span className="text-[10px] text-neutral-400 mt-1 block">Per checkout order</span>
                     </div>
@@ -151,11 +154,10 @@ export const MerchantDashboard: React.FC = () => {
                                             <td className="p-3.5 font-mono font-medium text-neutral-900">${Number(o.total).toFixed(2)}</td>
                                             <td className="p-3.5">
                                                 <span
-                                                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase border ${
-                                                        o.payment_status === "paid"
-                                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                            : "bg-amber-50 text-amber-700 border-amber-200"
-                                                    }`}
+                                                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase border ${o.payment_status === "paid"
+                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                        : "bg-amber-50 text-amber-700 border-amber-200"
+                                                        }`}
                                                 >
                                                     {o.payment_status}
                                                 </span>

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { DUMMY_STORES, DUMMY_PRODUCTS } from "../../assets/assets";
 import { StoreNavbar } from "../../components/StoreNavbar";
 import { StoreFooter } from "../../components/StoreFooter";
 import { useCart } from "../../context/CartContext";
@@ -12,6 +11,7 @@ import { ProductSpecs } from "../../components/public/product-detail/ProductSpec
 import { ProductReviews } from "../../components/public/product-detail/ProductReviews";
 import { RelatedProducts } from "../../components/public/product-detail/RelatedProducts";
 import { getStoreAccentStyles } from "../../utils/storeAccent";
+import { api } from "../../config/api";
 
 export const ProductDetail: React.FC = () => {
     const { storeSlug, productId } = useParams<{ storeSlug: string; productId: string }>();
@@ -32,32 +32,94 @@ export const ProductDetail: React.FC = () => {
         fetchProduct();
     }, [productId, storeSlug]);
 
-    const fetchProduct = () => {
-        setLoading(true);
-        const currentStore = DUMMY_STORES.find((s) => s.slug === storeSlug);
-        const currentProd = DUMMY_PRODUCTS.find(
-            (p) => String(p.id) === String(productId) || (storeSlug && p.store_slug === storeSlug && String(p.id) === String(productId))
-        );
-
-        if (currentStore) setStore(currentStore);
-        if (currentProd) {
-            setProduct(currentProd);
-            setSelectedImage(currentProd.images?.[0] ?? "");
-
-            const defaults: Record<string, string> = {};
-            currentProd.variants?.forEach((v: any) => {
-                if (v.name && v.options?.length) defaults[v.name] = v.options[0];
-            });
-            setSelectedVariants(defaults);
-
-            const related = DUMMY_PRODUCTS.filter(
-                (p) => p.store_slug === currentProd.store_slug && String(p.id) !== String(currentProd.id)
-            ).slice(0, 4);
-            setRelatedProducts(related);
-        } else {
-            toast.error("Failed to load product");
+    const fetchProduct = async () => {
+        if (!storeSlug || !productId) {
+            setProduct(null);
+            setLoading(false);
+            return;
         }
-        setLoading(false);
+
+        setLoading(true);
+
+        try {
+            // Fetch the product and store independently of related products.
+            const [prodResult, storeResult] = await Promise.allSettled([
+                api.get(`/api/products/${encodeURIComponent(productId)}`),
+                api.get(`/api/store/slug/${encodeURIComponent(storeSlug)}`),
+            ]);
+
+            if (prodResult.status === "fulfilled") {
+                const prodRes = prodResult.value;
+
+                if (prodRes.data.success && prodRes.data.product) {
+                    const prod = prodRes.data.product;
+
+                    setProduct(prod);
+                    setSelectedImage(prod.images?.[0] ?? "");
+
+                    const defaults: Record<string, string> = {};
+
+                    prod.variants?.forEach((v: any) => {
+                        if (v.name && v.options?.length) {
+                            defaults[v.name] = v.options[0];
+                        }
+                    });
+
+                    setSelectedVariants(defaults);
+                } else {
+                    setProduct(null);
+                }
+            } else {
+                console.error(
+                    "Failed to fetch product:",
+                    prodResult.reason?.response?.data || prodResult.reason?.message
+                );
+
+                setProduct(null);
+            }
+
+            if (storeResult.status === "fulfilled") {
+                const storeRes = storeResult.value;
+
+                if (storeRes.data.success && storeRes.data.store) {
+                    setStore(storeRes.data.store);
+                } else {
+                    setStore(null);
+                }
+            } else {
+                console.error(
+                    "Failed to fetch store:",
+                    storeResult.reason?.response?.data || storeResult.reason?.message
+                );
+
+                setStore(null);
+            }
+
+            // Related products are optional; their failure must not break the page.
+            try {
+                const relRes = await api.get("/api/products", {
+                    params: {
+                        storeSlug,
+                        status: "active",
+                    },
+                });
+
+                if (relRes.data.success) {
+                    setRelatedProducts((relRes.data.products ?? []).filter((p: any) => String(p.id) !== String(productId)).slice(0, 4));
+                } else {
+                    setRelatedProducts([]);
+                }
+            } catch (relatedError: any) {
+                console.error("Failed to fetch related products:", relatedError.response?.data || relatedError.message);
+                setRelatedProducts([]);
+            }
+        } catch (err: any) {
+            console.error("Unexpected product detail error:", err.response?.data || err.message);
+            setProduct(null);
+            toast.error("Failed to load product");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddToCart = () => {

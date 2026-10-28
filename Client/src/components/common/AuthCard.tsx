@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DUMMY_USERS, DUMMY_STORES } from "../../assets/assets";
 import { useAuth, type User as AuthUserType } from "../../context/AuthContext";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, ArrowLeftIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import { authClient } from "../../auth";
+import { api } from "../../config/api";
 
 export interface AuthSuccessData {
     token: string;
@@ -37,64 +38,124 @@ export const AuthCard: React.FC<AuthCardProps> = ({ role, initialMode = "login",
         e.preventDefault();
         setLoading(true);
 
-        const email = form.email.trim().toLowerCase();
-        const matchedUser = DUMMY_USERS.find((u) => u.email === email && (!effectiveRole || u.role === effectiveRole));
-        const matchedStore = storeSlug
-            ? DUMMY_STORES.find((s) => s.slug === storeSlug)
-            : storeId
-            ? DUMMY_STORES.find((s) => s.id === Number(storeId))
-            : matchedUser?.store_id
-            ? DUMMY_STORES.find((s) => s.id === matchedUser.store_id)
-            : effectiveRole === "merchant"
-            ? DUMMY_STORES[0]
-            : null;
+        try {
+            const trimmedEmail = form.email.trim();
 
-        let determinedRole: string = effectiveRole;
-        if (email.includes("admin@") || matchedUser?.role === "admin") {
-            determinedRole = "admin";
-        } else if (effectiveRole === "merchant" || matchedUser?.role === "merchant") {
-            determinedRole = "merchant";
-        } else {
-            determinedRole = "customer";
-        }
+            const result = isRegister ?
+                await authClient.signUp.email({
+                    name: form.name.trim() || trimmedEmail.split("@")[0],
+                    email: trimmedEmail,
+                    password: form.password,
+                })
+                :
+                await authClient.signIn.email({
+                    email: trimmedEmail,
+                    password: form.password,
+                })
 
-        const authUser: AuthUserType = matchedUser
-            ? { ...matchedUser, role: determinedRole }
-            : {
-                  id: Date.now(),
-                  name: form.name.trim() || email.split("@")[0] || "Demo User",
-                  email: email || "demo@EzyF.com",
-                  role: determinedRole as any,
-                  store_id: determinedRole === "admin" ? null : (matchedStore?.id || null),
-              };
+            if (result.error) {
+                const errMessage = result.error.message || "Authenticated failed";
+                if (isRegister && (errMessage.toLowerCase().includes("already") || errMessage.toLowerCase().includes("exist"))) {
+                    toast.error("An account with this email already exists. Switching to Sign In.");
+                    setMode("login");
+                } else {
+                    toast.error(errMessage);
+                }
+                setLoading(false);
+                return;
+            }
 
-        if (!isRegister && effectiveRole === "admin" && authUser.role !== "admin") {
-            toast.error("Access denied: You do not have platform admin privileges");
-            setLoading(false);
-            return;
-        }
+            const sessionsRes = await authClient.getSession();
+            const activeToken = sessionsRes.data?.session?.token
+                || (result.data as any)?.token
+                || (result.data as any)?.session?.token
+                || "";
 
-        const dummyToken = `dummy_token_${Date.now()}`;
+            const sessionUser = sessionsRes.data?.user || result.data?.user;
 
-        setTimeout(() => {
-            setLoading(false);
-            toast.success(isRegister ? "Account created successfully!" : "Signed in successfully!");
+            console.log("Has active token:", !!activeToken);
+            console.log("Session user:", sessionUser);
 
-            if (onSuccess) {
-                onSuccess({ token: dummyToken, user: authUser, store: matchedStore, mode });
+            if (activeToken) {
+                localStorage.setItem("EzyF_token", activeToken);
+            }
+
+            let determinedRole: string = effectiveRole;
+            if ((sessionUser as any)?.role === "admin") {
+                determinedRole = "admin"
+            } else if (effectiveRole === "merchant" || (sessionUser as any)?.role === "merchant") {
+                determinedRole = "merchant";
             } else {
-                login(dummyToken, authUser, matchedStore as any);
-                if (authUser.role === "admin") {
+                determinedRole = "customer";
+            }
+
+            let authStore: any = null;
+
+            if (determinedRole == "merchant") {
+                try {
+                    const onboardRes = await api.post(
+                        "/api/store/onboard-merchant",
+                        {},
+                        { headers: activeToken ? { Authorization: `Bearer ${activeToken}` } : undefined }
+                    );
+                    if (onboardRes.data?.store) {
+                        authStore = onboardRes.data.store;
+                    }
+                } catch (e) {
+                    console.warn("Colud not onboard merchant role:", e)
+                }
+
+                if (!authStore) {
+                    try {
+                        const storeRes = await api.post(
+                            "/api/store/me",
+                            {},
+                            { headers: activeToken ? { Authorization: `Bearer ${activeToken}` } : undefined }
+                        );
+                        if (storeRes.data?.success && storeRes.data?.store) {
+                            authStore = storeRes.data.store;
+                        }
+                    } catch {
+                        authStore = null;
+                    }
+                }
+            }
+
+            const authUser: AuthUserType = {
+                id: sessionUser?.id || "user",
+                name: sessionUser?.name || form.name.trim() || trimmedEmail.split("@")[0],
+                email: trimmedEmail,
+                role: determinedRole,
+                store_id: determinedRole === "admin" ? null : (authStore?.id || null),
+            }
+
+            if (!isRegister && effectiveRole === "admin" && authUser.role !== "admin") {
+                toast.error("Access denined: You do not have platform admin privileges");
+                setLoading(false);
+                return;
+            }
+
+            toast.success(isRegister ? "Account created successfully!" : "Signed in successfully")
+            if (onSuccess) {
+                onSuccess({ token: activeToken, user: authUser, store: authStore, mode });
+            } else {
+                login(activeToken, authUser, authStore);
+                if (authUser.role == "admin") {
                     navigate("/admin");
                 } else if (authUser.role === "merchant" || effectiveRole === "merchant") {
-                    navigate(matchedStore ? "/merchant" : "/merchant/store-setup");
+                    navigate(authStore ? "/merchant" : "/merchant/store-setup");
                 } else if (storeSlug) {
                     navigate(`/store/${storeSlug}`);
                 } else {
                     navigate("/");
                 }
             }
-        }, 300);
+        } catch (err: any) {
+            console.error("Auth error:", err);
+            toast.error(err?.message || "Authentication failed. Please check credentials")
+        } finally {
+            setLoading(false)
+        }
     };
 
     const inputClasses =
